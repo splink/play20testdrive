@@ -1,0 +1,70 @@
+@(userForm: Form[controllers.User])
+
+@main("Edit") {
+    
+   <a href="@routes.Application.index()">Back</a>
+    
+   <form action="@routes.Application.saveUser()" method="POST">
+    <p>
+	    @userForm.forField("name") { field =>
+	      <label>@field.name</label>
+	      <input type="text" name="@field.name" value="@field.value">
+	      @field.error.map { error =>
+	        <p class="error">
+	          @error
+	        </p>
+	      } 
+	    }    
+  </p>
+  
+  <p>
+    @userForm.forField("pwd") { field =>
+      <label>@field.name</label>
+      <input type="text" name="@field.name" value="@field.value">
+      @field.error.map { error =>
+        <p class="error">
+          @error
+        </p>
+      } 
+    }    
+  </p>
+  
+   <p>
+    @userForm.forField("email") { field =>
+      <label>@field.name</label>
+      <input type="text" name="@field.name" value="@field.value">
+      @field.error.map { error =>
+        <p class="error">
+          @error
+        </p>
+      } 
+    }    
+  </p>
+  
+  <p>
+    @userForm.forField("address.street") { field =>
+      <label>@field.name</label>
+      <input type="text" name="@field.name" value="@field.value">
+      @field.error.map { error =>
+        <p class="error">
+          @error
+        </p>
+      } 
+    }    
+  </p>
+  
+  <p>
+    @userForm.forField("address.city") { field =>
+      <label>@field.name</label>
+      <input type="text" name="@field.name" value="@field.value">
+      @field.error.map { error =>
+        <p class="error">
+          @error
+        </p>
+      } 
+    }    
+  </p>
+  
+  <input type="submit" value="Submit" />
+</form>
+}

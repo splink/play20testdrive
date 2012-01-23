@@ -1,0 +1,15 @@
+@(users: Seq[controllers.User])
+
+@main("Hello") {
+    
+    Hello!
+     <a href='@routes.Application.newUser()'>new User</a>
+    <ul>
+		@users.map { user => 
+			<li><a href='@routes.Application.editUser(user.email)'>@user.name</a>
+			 (@user.email)</li>
+			 <a href='@routes.Application.removeUser(user.email)'>REMOVE</a>
+		}
+	</ul>
+    
+}
