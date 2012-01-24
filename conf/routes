@@ -4,10 +4,10 @@
 
 # Home page
 GET     /                           controllers.Application.index()
-GET 	/edit/:email				controllers.Application.editUser(email : String)
+GET 	/edit/:id				controllers.Application.editUser(id : String)
 POST 	/edit/						controllers.Application.saveUser()
 GET		/new						controllers.Application.newUser()
-GET 	/remove/:email				controllers.Application.removeUser(email : String)
+GET 	/remove/:id				controllers.Application.removeUser(id : String)
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.at(path="/public", file)

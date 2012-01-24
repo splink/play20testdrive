@@ -6,9 +6,8 @@
      <a href='@routes.Application.newUser()'>new User</a>
     <ul>
 		@users.map { user => 
-			<li><a href='@routes.Application.editUser(user.email)'>@user.name</a>
-			 (@user.email)</li>
-			 <a href='@routes.Application.removeUser(user.email)'>REMOVE</a>
+			<li><a href='@routes.Application.editUser(user._id.toStringMongod())'>@user.name</a></li>
+			 <a href='@routes.Application.removeUser(user._id.toStringMongod())'>REMOVE</a>
 		}
 	</ul>
     

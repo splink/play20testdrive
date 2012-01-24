@@ -5,6 +5,20 @@
    <a href="@routes.Application.index()">Back</a>
     
    <form action="@routes.Application.saveUser()" method="POST">
+   
+   	@userForm.forField("_id") { field =>
+	      <input type="hidden" name="@field.name" 
+	      value="@{field.value match {
+	      	case Some(str) => str
+	      	case None => new org.bson.types.ObjectId() 
+	      	}}">
+	      @field.error.map { error =>
+	        <p class="error">
+	          @error
+	        </p>
+	      } 
+	    }  
+   
     <p>
 	    @userForm.forField("name") { field =>
 	      <label>@field.name</label>
@@ -20,7 +34,7 @@
   <p>
     @userForm.forField("pwd") { field =>
       <label>@field.name</label>
-      <input type="text" name="@field.name" value="@field.value">
+      <input type="password" name="@field.name" value="@field.value">
       @field.error.map { error =>
         <p class="error">
           @error

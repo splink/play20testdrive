@@ -8,17 +8,13 @@ import com.novus.salat._
 import com.novus.salat.global._
 import com.novus.salat.dao._
 import com.mongodb.casbah.Imports._
+import utils.FormatsObjectId._
+import validation.Constraints._
 
-//TODO insertOrUpdate
-//TODO Form(of(Address.apply was macht das?
-//TODO how does the id thing work
-//TODO why arent embedded documents deserialized to case classes 
-//TODO abstract sealed class Profile: why differentiate between Sponsor & OrganizerProfile
-//TODO seq in case class constructor: How to define userForm
 object Application extends Controller {
-
   val userForm = Form(
     of(User.apply _, User.unapply _)(
+      "_id" -> of[ObjectId],
       "name" -> text,
       "pwd" -> text,
       "email" -> email,
@@ -30,19 +26,15 @@ object Application extends Controller {
     val users = UserDAO.find(MongoDBObject.empty).toSeq
     Logger.info("---------" + users.length + " users")
 
-    if (users.length < 1) {
-      UserDAO.insert(User("Anna", "secret", "doktorkoehler@googlemail.com", Address("Domstr.77", "Koeln")))
-      UserDAO.insert(User("Max", "secret", "maxkugland@gmail.com", Address("Domstr.77", "Koeln")))
-      Logger.info("insert 2 users")
-    }
-
     Ok(views.html.index(users))
   }
 
-  def editUser(email: String) = Action {
-    val user = UserDAO.findByEmail(email).getOrElse(User("", "", "", Address("", "")))
-    val filledForm = userForm.fill(user)
-    Ok(views.html.edit(filledForm))
+  def editUser(id: String) = Action {
+    Logger.info("editUser: " + id)
+
+    UserDAO.findOneByID(new ObjectId(id)).map {
+      user => Ok(views.html.edit(userForm.fill(user)))
+    }.getOrElse(NotFound("No user for id: " + id))
   }
 
   def newUser() = Action {
@@ -51,21 +43,22 @@ object Application extends Controller {
 
   def saveUser() = Action {
     implicit request =>
+      
       userForm.bindFromRequest.fold(
-        formWithErrors => Ok(views.html.edit(formWithErrors)),
-        user =>
-          if (UserDAO.findByEmail(user.email).isDefined)
-            // instead of grater this can be used to update specific fields: MongoDBObject("name" -> user.name, "pwd" -> user.pwd),
-            UserDAO.update(MongoDBObject("email" -> user.email), grater[User].asDBObject(user), upsert = false, multi = false)
-
-          else
-            UserDAO.save(user))
-
-      Redirect(routes.Application.index)
+        formWithErrors => {
+          Logger.info("saving user with id: " + userForm.data.contains("_id")  )
+          Logger.info("errors! " + formWithErrors.errors)
+          Ok(views.html.edit(formWithErrors))
+        },
+        user => {
+          //          instead of grater this can be used to update specific fields: MongoDBObject("name" -> user.name, "pwd" -> user.pwd),
+          UserDAO.update(MongoDBObject("_id" -> user._id), grater[User].asDBObject(user), upsert = true, multi = false)
+          Redirect(routes.Application.index)
+        })
   }
 
-  def removeUser(email: String) = Action {
-    UserDAO.findByEmail(email) match {
+  def removeUser(id: String) = Action {
+    UserDAO.findOneByID(new ObjectId(id)) match {
       case Some(user) =>
         UserDAO.remove(user)
       case None =>
@@ -86,9 +79,9 @@ object DB {
   }
 }
 
-case class User(name: String, pwd: String, email: String, address: Address/*, hobbies : Seq[Hobby] = List[Hobby]()*/)
+case class User(_id: ObjectId = new ObjectId, name: String, pwd: String, email: String, address: Address /*, hobbies : Seq[Hobby] = Nil*/ )
 case class Address(street: String, city: String)
-case class Hobby(title : String)
+case class Hobby(title: String)
 
 object UserDAO extends SalatDAO[User, ObjectId](collection = DB.connection("users")) {
   def findByEmail(email: String) = findOne(MongoDBObject("email" -> email))
