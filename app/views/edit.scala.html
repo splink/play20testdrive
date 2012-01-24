@@ -8,15 +8,7 @@
    
    	@userForm.forField("_id") { field =>
 	      <input type="hidden" name="@field.name" 
-	      value="@{field.value match {
-	      	case Some(str) => str
-	      	case None => new org.bson.types.ObjectId() 
-	      	}}">
-	      @field.error.map { error =>
-	        <p class="error">
-	          @error
-	        </p>
-	      } 
+	      value="@field.value">
 	    }  
    
     <p>

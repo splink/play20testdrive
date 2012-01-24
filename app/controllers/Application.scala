@@ -38,7 +38,8 @@ object Application extends Controller {
   }
 
   def newUser() = Action {
-    Ok(views.html.edit(userForm))
+    val filledUserform = userForm.fill(User(new ObjectId(), "","","",Address("","")))
+    Ok(views.html.edit(filledUserform))
   }
 
   def saveUser() = Action {
