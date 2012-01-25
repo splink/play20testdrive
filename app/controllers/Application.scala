@@ -3,6 +3,7 @@ package controllers
 import play.api._
 import play.api.mvc._
 import play.api.data._
+import play.api.data.Forms._
 import play.api.data.format.Formats._
 import com.novus.salat._
 import com.novus.salat.global._
@@ -13,14 +14,14 @@ import validation.Constraints._
 
 object Application extends Controller {
   val userForm = Form(
-    of(User.apply _, User.unapply _)(
+    mapping(
       "_id" -> of[ObjectId],
       "name" -> text,
       "pwd" -> text,
       "email" -> email,
-      "address" -> of(Address.apply _, Address.unapply _)(
+      "address" -> mapping(
         "street" -> text,
-        "city" -> text)))
+        "city" -> text)(Address.apply)(Address.unapply))(User.apply)(User.unapply))
 
   def index = Action {
     val users = UserDAO.find(MongoDBObject.empty).toSeq
@@ -38,16 +39,16 @@ object Application extends Controller {
   }
 
   def newUser() = Action {
-    val filledUserform = userForm.fill(User(new ObjectId(), "","","",Address("","")))
+    val filledUserform = userForm.fill(User(new ObjectId(), "", "", "", Address("", "")))
     Ok(views.html.edit(filledUserform))
   }
 
   def saveUser() = Action {
     implicit request =>
-      
+
       userForm.bindFromRequest.fold(
         formWithErrors => {
-          Logger.info("saving user with id: " + userForm.data.contains("_id")  )
+          Logger.info("saving user with id: " + userForm.data.contains("_id"))
           Logger.info("errors! " + formWithErrors.errors)
           Ok(views.html.edit(formWithErrors))
         },
